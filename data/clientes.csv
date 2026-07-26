@@ -1,0 +1,16 @@
+cpf,nome,empresa,telefone,email,limite_credito,credito_utilizado,status_credito,desconto_pagamento_antecipado_pct,pedidos_bloqueados,restricao_spc_serasa
+433.218.196-43,Carlos Eduardo Ferreira,Posto Rota Sul Ltda,(11) 96122-2535,carlos.ferreira@posto.com.br,30000,5838.94,Aprovado,5,Não,Não
+083.863.794-99,Mariana Souza Lima,Distribuidora Alfa Combustíveis,(11) 99108-3615,mariana.lima@distribuidora.com.br,8000,4236.42,Aprovado,10,Não,Não
+351.161.559-35,João Batista Nogueira,Química Bela Vista ME,(11) 99305-1711,joão.nogueira@química.com.br,10000,3361.91,Aprovado,10,Não,Não
+618.495.931-08,Fernanda Ribeiro Castro,Transportes Nogueira & Cia,(11) 98708-4733,fernanda.castro@transportes.com.br,20000,4122.04,Aprovado,8,Não,Não
+164.752.553-51,Roberto Almeida Pinto,Indústria Vale Verde S.A.,(11) 98874-2169,roberto.pinto@indústria.com.br,5000,4135.1,Aprovado,5,Não,Não
+276.483.503-51,Juliana Martins Rocha,Comercial Ferreira EPP,(11) 99297-6168,juliana.rocha@comercial.com.br,20000,14395.16,Aprovado,10,Não,Não
+953.767.242-55,Antônio Carlos Vieira,Auto Posto Pinheiros,(11) 99051-9830,antônio.vieira@auto.com.br,10000,1562.6,Aprovado,8,Não,Não
+965.328.710-95,Patrícia Gomes Andrade,Grupo Andrade Petroquímicos,(11) 96626-3621,patrícia.andrade@grupo.com.br,30000,17906.94,Aprovado,10,Não,Não
+697.848.018-50,Ricardo Tavares Neto,Lubrificantes Sul Ltda,(11) 99148-6573,ricardo.neto@lubrificantes.com.br,20000,3079.97,Aprovado,3,Não,Não
+704.828.148-02,Camila Duarte Barros,Distribuidora Central de Combustíveis,(11) 96814-3504,camila.barros@distribuidora.com.br,10000,4695.5,Restrito,8,Sim,Não
+809.570.154-88,Sérgio Henrique Melo,Resinas & Polímeros Barros,(11) 96237-4946,sérgio.melo@resinas.com.br,20000,18209.5,Aprovado,3,Não,Não
+182.278.248-11,Renata Costa Farias,Petro Comércio Reis,(11) 97733-4470,renata.farias@petro.com.br,5000,3610.61,Restrito,5,Sim,Não
+578.713.315-31,Eduardo Lopes Cardoso,Química Industrial Teixeira,(11) 98409-4770,eduardo.cardoso@química.com.br,15000,14188.15,Aprovado,5,Não,Não
+031.051.834-26,Vanessa Cristina Reis,Posto Cardoso & Filhos,(11) 96877-9834,vanessa.reis@posto.com.br,5000,801.72,Análise,5,Não,Não
+997.376.311-45,Marcelo Aguiar Teixeira,Solventes Melo Distribuição,(11) 97451-7939,marcelo.teixeira@solventes.com.br,30000,26855.61,Análise,10,Não,Não
