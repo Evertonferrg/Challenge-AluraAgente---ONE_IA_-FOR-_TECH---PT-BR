@@ -6,9 +6,11 @@ Exetutar um unica vez para (re)criar os csvs em data/.
 
 import csv
 import random
-from datetime import data, timedelta
+from datetime import date, timedelta
 
 random.seed(42)
+
+HOJE = date(26, 7, 26) # data referencia do projeto
 
 NOMES = [
     "Carlos Eduardo Ferreira", "Mariana Souza Lima", "João Batista Nogueira", 
@@ -31,7 +33,7 @@ STATUS_CREDITO = ["Aprovado", "Aprovado", "Aprovado", "Análise", "Restrito"]
 FORMAS_PAGAMENTO = ["Boleto", "PIX", "Cartão de Crédito", "Transferência (TED)"]
 
 def gerar_cpf():
-    n = [ramdom.randint(0, 9) for _ in range(9)]
+    n = [random.randint(0, 9) for _ in range(9)]
 
     def dv(nums, peso_inicial):
         s = sum(n * p for n, p in zip(nums, range(peso_inicial, 1, -1)))
@@ -79,7 +81,7 @@ def gerar_boletos(clientes, qtd_por_cliente=(2, 5)):
             valor = round(random.uniform(800, 25000), 2)
 
             if data_vencimento < HOJE:
-                status = random.choice(["Vencido", "Pago"], weights=[0.55, 0.45])[0]
+                status = random.choices(["Vencido", "Pago"], weights=[0.55, 0.45])[0]
             elif data_vencimento <= HOJE + timedelta(days=7):
                 status = random.choices(["Pendente", "Pago"], weights=[0.7, 0.3])[0]
             else:
@@ -93,17 +95,17 @@ def gerar_boletos(clientes, qtd_por_cliente=(2, 5)):
             boletos.append({
                 "id_boleto": f"BOL-{id_seq:05d}",
                 "cpf_cliente": c["cpf"],
-                "descricao": random.choice({
-                    "Fornecimento de nafta petroquimica",
-                    "venda de resinas plasticas",
-                    "Fornecimento de solventes industriais",
-                    "Venda de lubrificantes automotivos",
-                    "Fornecimento de combustível a granel",
-                    "Venda de polimeros técnicos",
-                }),
+                "descricao": random.choice([
+                "Fornecimento de nafta petroquimica",
+                "Venda de resinas plásticas",
+                "Fornecimento de solventes industriais",
+                "Venda de lubrificantes automotivos",
+                "Fornecimento de combustível a granel",
+                "Venda de polímeros técnicos",
+            ]),
 
                 "valor": valor,
-                "data_emissao": data_emissao.isformat(),
+                "data_emissao": data_emissao.isoformat(),
                 "data_vencimento": data_vencimento.isoformat(),
                 "status": status,
                 "forma_pagamento": random.choice(FORMAS_PAGAMENTO),
