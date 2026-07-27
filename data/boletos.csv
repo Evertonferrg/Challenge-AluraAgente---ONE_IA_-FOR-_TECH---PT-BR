@@ -1,8 +1,8 @@
 id_boleto,cpf_cliente,descricao,valor,data_emissao,data_vencimento,status,forma_pagamento,linha_digitavel,data_pagamento
 BOL-00001,433.218.196-43,Venda de polímeros técnicos,17095.42,2026-07-29,2026-08-13,Pendente,PIX,17944 62772 54473 24322 42591,
 BOL-00002,433.218.196-43,Venda de resinas plásticas,13778.12,2026-05-21,2026-09-15,Pendente,Cartão de Crédito,70637 42742 19880 68082 82132,
-BOL-00003,433.218.196-43,Fornecimento de nafta petroquimica,16581.91,2026-05-09,2026-05-24,Vencido,Boleto,40982 31798 63269 73653 73092,
-BOL-00004,433.218.196-43,Fornecimento de nafta petroquimica,22639.12,2026-05-24,2026-06-23,Vencido,Transferência (TED),44760 69638 47388 65444 82845,
+BOL-00003,433.218.196-43,Fornecimento de nafta petroquimica,16581.91,2026-05-09,2026-05-24,Renegociado,Boleto,40982 31798 63269 73653 73092,
+BOL-00004,433.218.196-43,Fornecimento de nafta petroquimica,22639.12,2026-05-24,2026-06-23,Renegociado,Transferência (TED),44760 69638 47388 65444 82845,
 BOL-00005,433.218.196-43,Fornecimento de solventes industriais,4546.08,2026-07-20,2026-08-19,Pendente,PIX,17665 85914 81066 17989 51104,
 BOL-00006,083.863.794-99,Fornecimento de nafta petroquimica,12968.98,2026-05-03,2026-06-02,Pago,Boleto,34356 18981 87992 18907 98501,2026-05-30
 BOL-00007,083.863.794-99,Fornecimento de combustível a granel,3701.26,2026-05-27,2026-06-26,Pago,Boleto,91183 20745 64948 96163 86503,2026-06-24
@@ -55,3 +55,6 @@ BOL-00053,997.376.311-45,Fornecimento de nafta petroquimica,4471.79,2026-07-16,2
 BOL-00054,997.376.311-45,Venda de lubrificantes automotivos,19571.78,2026-07-15,2026-08-05,Pendente,Transferência (TED),68028 48974 87139 66207 50026,
 BOL-00055,997.376.311-45,Venda de polímeros técnicos,15553.07,2026-07-08,2026-07-23,Pago,PIX,44687 96563 20641 30585 41439,2026-07-21
 BOL-00056,997.376.311-45,Venda de polímeros técnicos,4588.09,2026-05-19,2026-06-03,Vencido,Transferência (TED),48175 14278 40340 47762 47056,
+BOL-00057,433.218.196-43,Parcela 1/3 - renegociação de dívida,13335.15,2026-07-26,2026-08-25,Pendente,Boleto,96233 98759 43019 62312 92225,
+BOL-00058,433.218.196-43,Parcela 2/3 - renegociação de dívida,13335.15,2026-07-26,2026-09-24,Pendente,Boleto,93278 26071 24554 62140 74276,
+BOL-00059,433.218.196-43,Parcela 3/3 - renegociação de dívida,13335.15,2026-07-26,2026-10-24,Pendente,Boleto,28984 18866 10087 80083 81341,
