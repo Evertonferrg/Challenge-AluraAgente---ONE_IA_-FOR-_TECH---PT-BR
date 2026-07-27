@@ -10,7 +10,7 @@ from datetime import date, timedelta
 
 random.seed(42)
 
-HOJE = date(26, 7, 26) # data referencia do projeto
+HOJE = date(2026, 7, 26) # data referencia do projeto
 
 NOMES = [
     "Carlos Eduardo Ferreira", "Mariana Souza Lima", "João Batista Nogueira", 
@@ -145,4 +145,4 @@ if __name__ == "__main__":
         ])
         writer.writeheader()
 
-        print(f"{len(clientes)} clientes e {len(boletos)} boletos gerados em data/")
+    print(f"{len(clientes)} clientes e {len(boletos)} boletos gerados em data/")
