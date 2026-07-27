@@ -27,27 +27,6 @@ def identificar_cliente_por_cpf(cpf: str) -> dict:
     c = cliente.iloc[0].to_dict()
     return {"encontrado": True, **c}
 
-# verificação de credito
-
-def verificar_credito(cpf: str) -> dict:
-    """Verifica o limite de crédito, valor utilizado, disponivel e status do cliente."""
-    cliente = identificar_cliente_por_cpf(cpf)
-    if not cliente["encontrado"]:
-        return cliente
-    
-    limite = float(cliente["limite_credito"])
-    usado = float(cliente["credito_utilizado"])
-    disponivel = round(limite - usado, 2)
-    percentual_uso = round((usado / limite) * 100, 1) if limite else 0
-
-    return {
-        "encontrado": True,
-        "cliente": cliente["nome"],
-        "limite_credito": limite,
-        "credito_utilizado": usado,
-        "credito_disponivel": disponivel,
-        "percentual_utilizado": percentual_uso,
-    }
 
 #Trabalhando com a tabela de boletos(mais complexa)
 

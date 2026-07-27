@@ -1,4 +1,2 @@
-from src.tools import gerar_relatorio_inadimplencia_geral
-
-resultado = gerar_relatorio_inadimplencia_geral()
-print(resultado)
+from src.tools import gerar_relatorio_cobranca
+print(gerar_relatorio_cobranca("433.218.196-43"))
