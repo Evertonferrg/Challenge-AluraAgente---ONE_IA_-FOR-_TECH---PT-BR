@@ -1,2 +1,5 @@
 id_chamado,cpf_cliente,id_boleto,motivo,data_abertura,status
 CHM-00001,433.218.196-43,BOL-00001,"Cliente alega que já pagou via PIX, mas o sistema mostra pendente.",2026-07-26,Aberto
+CHM-00002,433.218.196-43,BOL-00001,cliente alega ja ter pago,2026-07-26,Aberto
+CHM-00003,433.218.196-43,BOL-00001,cliente alega ja ter pago,2026-07-26,Aberto
+CHM-00004,433.218.196-43,BOL-00001,cliente alega já ter pago,2026-07-26,Aberto

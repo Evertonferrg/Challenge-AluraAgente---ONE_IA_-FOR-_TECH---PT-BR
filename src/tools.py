@@ -6,6 +6,7 @@ import datetime
 from datetime import date
 from datetime import date, datetime, timedelta
 from random import randint
+from . import email_utils
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CLIENTES_PATH = os.path.join(BASE_DIR, "data", "clientes.csv")
@@ -445,4 +446,109 @@ def gerar_relatorio_inadimplencia_geral() -> dict:
         "quantidade_boletos_vencidos": len(vencidos),
         "clientes_inadimplentes": int(clientes_inadimplentes),
         "aging": aging_dict,
+    }
+
+def enviar_segunda_via_por_email(id_boleto: str, email: str = None) -> dict:
+    """Emite a 2ª via de um boleto e envia por e-mail ao cliente (ou a um
+    e-mail alternativo informado)."""
+    segunda_via = emitir_segunda_via_boleto(id_boleto)
+    if not segunda_via.get("encontrado") or not segunda_via.get("emitido"):
+        return segunda_via
+    
+    boletos = _carregar_boletos()
+    clientes = _carregar_clientes()
+    b = boletos[boletos["id_boleto"] == id_boleto].iloc[0]
+    cliente = clientes[clientes["cpf"] == b["cpf_cliente"]].iloc[0]
+    destino = email or cliente["email"]
+
+    corpo = (
+        f"Olá, {cliente['nome']},\n\n"
+        f"Segue a 2ª via do boleto {id_boleto}.\n\n"
+        f"Valor: R$ {float(b['valor']):.2f}\n"
+        f"Linha digitável: {b['linha_digitavel']}\n\n"
+        f"Atenciosamente,\nPetroMax Química - Departamento Financeiro"
+    )
+    envio = email_utils.enviar_email(destino, f"2ª via do boleto {id_boleto} - PetroMax Química", corpo)
+
+    return {
+        "encontrado": True,
+        "emitido": True,
+        "id_boleto": id_boleto,
+        "enviado_para": destino,
+        "envio_email": envio,
+        "mensagem": f"2ª via do boleto {id_boleto} emitida e enviada para {destino} ({envio.get('modo', 'simulado')}).",
+    }
+
+def enviar_comprovante_pagamento(id_boleto: str, email: str = None) -> dict:
+    """Simula/envia o comprovante de pagamento de um boleto por e-mail."""
+    boletos = _carregar_boletos()
+    clientes = _carregar_clientes()
+
+    boleto = boletos[boletos["id_boleto"] == id_boleto]
+    if boleto.empty:
+        return {"sucesso": False, "mensagem": f"Boleto {id_boleto} não encontrado."}
+
+    b = boleto.iloc[0]
+    if b["status"] != "Pago":
+        return {"sucesso": False, "mensagem": f"O boleto {id_boleto} ainda não foi pago (status: {b['status']}). Não há comprovante a enviar."}
+
+    cliente = clientes[clientes["cpf"] == b["cpf_cliente"]].iloc[0]
+    destino = email or cliente["email"]
+
+    corpo = (
+        f"Olá, {cliente['nome']},\n\n"
+        f"Confirmamos o recebimento do pagamento do boleto {id_boleto}.\n\n"
+        f"Valor pago: R$ {float(b['valor']):.2f}\n"
+        f"Data do pagamento: {b['data_pagamento']}\n\n"
+        f"Obrigado,\nPetroMax Química - Departamento Financeiro"
+    )
+    envio = email_utils.enviar_email(destino, f"Comprovante de pagamento - boleto {id_boleto}", corpo)
+
+    return {
+        "sucesso": True,
+        "mensagem": f"Comprovante de pagamento do boleto {id_boleto} enviado para {destino} ({envio.get('modo', 'simulado')}).",
+        "detalhes": {
+            "id_boleto": id_boleto,
+            "valor_pago": float(b["valor"]),
+            "data_pagamento": b["data_pagamento"],
+            "enviado_para": destino,
+        },
+    }
+
+
+def enviar_alerta_vencimento_proximo(cpf: str, dias_antecedencia: int = 3) -> dict:
+    """Envia por e-mail um alerta preventivo de boletos que vencem nos
+    próximos N dias (régua de cobrança, padrão 3 dias)."""
+    cliente = identificar_cliente_por_cpf(cpf)
+    if not cliente["encontrado"]:
+        return cliente
+
+    boletos = _carregar_boletos()
+    proximos = boletos[
+        (boletos["cpf_cliente"] == cpf)
+        & (boletos["status"] == "Pendente")
+        & (boletos["data_vencimento"] >= HOJE)
+        & (boletos["data_vencimento"] <= HOJE + timedelta(days=dias_antecedencia))
+    ]
+    if proximos.empty:
+        return {"encontrado": True, "enviado": False, "mensagem": f"Nenhum boleto vence nos próximos {dias_antecedencia} dias para o CPF {cpf}."}
+
+    lista = "\n".join(
+        f"- {row.id_boleto}: R$ {row.valor:.2f}, vence em {row.data_vencimento}"
+        for row in proximos.itertuples()
+    )
+    corpo = (
+        f"Olá, {cliente['nome']},\n\n"
+        f"Lembramos que você possui boleto(s) vencendo em breve:\n\n{lista}\n\n"
+        f"Evite juros e multa efetuando o pagamento até a data de vencimento.\n\n"
+        f"Atenciosamente,\nPetroMax Química - Departamento Financeiro"
+    )
+    envio = email_utils.enviar_email(cliente["email"], "Lembrete: boleto(s) próximo(s) do vencimento", corpo)
+
+    return {
+        "encontrado": True,
+        "enviado": True,
+        "quantidade_boletos": len(proximos),
+        "envio_email": envio,
+        "mensagem": f"Alerta de vencimento enviado para {cliente['email']} ({len(proximos)} boleto(s)).",
     }
