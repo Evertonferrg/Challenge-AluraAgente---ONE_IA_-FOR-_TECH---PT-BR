@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
+from src.institucional_agent import build_institucional_agent
 
 from src.agent import build_agent
 
@@ -48,3 +49,26 @@ def health():
     return {"status": "ok"}
 
 app.mount("/", StaticFiles(directory="petromax-frontend/dist", html=True), name="site")
+
+_institucional_chain = None
+_sessoes_institucional: dict[str, list] = {}
+
+
+def get_institucional_chain():
+    global _institucional_chain
+    if _institucional_chain is None:
+        _institucional_chain = build_institucional_agent()
+    return _institucional_chain
+
+
+@app.post("/perguntar-institucional")
+def perguntar_institucional(p: Pergunta):
+    chain = get_institucional_chain()
+    historico = _sessoes_institucional.setdefault(p.session_id, [])
+
+    resultado = chain.invoke({"input": p.mensagem, "chat_history": historico})
+    texto = resultado.content
+
+    historico.append(("human", p.mensagem))
+    historico.append(("ai", texto))
+    return {"resposta": texto}

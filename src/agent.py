@@ -228,3 +228,11 @@ def build_agent() -> AgentExecutor:
     agent = create_tool_calling_agent(llm, TOOLS, prompt)
     return AgentExecutor(agent=agent, tools=TOOLS, verbose=False)
 
+@tool
+def gerar_relatorio_inadimplencia_geral(motivo_consulta: str = "geral") -> dict:
+    """Gera um relatório gerencial de inadimplência de toda a carteira de
+    clientes, com faixas de atraso (aging: 0-30, 31-60, 61-90, 90+ dias).
+    O parâmetro motivo_consulta pode ser preenchido com qualquer texto ou
+    deixado no padrão."""
+    return biz.gerar_relatorio_inadimplencia_geral()
+
