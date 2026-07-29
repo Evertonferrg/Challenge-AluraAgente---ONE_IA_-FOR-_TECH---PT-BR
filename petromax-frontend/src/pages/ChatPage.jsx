@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './ChatPage.css';
 
 // Troque pela URL do seu back-end quando for para produção
-const API_URL = 'http://127.0.0.1:8000/perguntar';
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/perguntar';
 
 // Gera um session_id simples e único por aba do navegador
 const gerarSessionId = () => 'sess_' + Math.random().toString(36).slice(2, 11);
