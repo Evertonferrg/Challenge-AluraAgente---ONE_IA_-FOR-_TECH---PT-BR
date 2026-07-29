@@ -1,34 +1,160 @@
-"""
-agent.py
-Monta o agente de IA (LangChain + Groq) que orquestra as ferramentas de 
-credito e cobrança da PetroMax Quimica.
-"""
 import os
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.tools import tool
-
-from . import tools as biz
 
 load_dotenv()
 
-MODEL_NAME = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile") 
+from langchain_groq import ChatGroq
+from langchain.agents import create_tool_calling_agent
+from langchain_classic.agents import AgentExecutor
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.tools import tool
 
+import pandas as pd
+
+from . import tools as biz
+
+
+
+MODEL_NAME = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+# ---------------------------------------------------------------------------
+# Cadastro de funcionarios (autenticacao por sessao)
+# ---------------------------------------------------------------------------
+df_funcionarios = pd.read_csv("data/funcionarios.csv")
+
+# guarda em memoria quais sessoes ja foram autenticadas
+sessao_funcionario = {}
+
+
+def validar_funcionario(nome: str, matricula: str) -> bool:
+    """Confere se nome + matricula batem com o cadastro."""
+    resultado = df_funcionarios[
+        (df_funcionarios["nome"].str.strip().str.lower() == nome.strip().lower())
+        & (df_funcionarios["matricula"].str.strip() == matricula.strip())
+    ]
+    return not resultado.empty
+
+
+
+
+def autenticar_sessao(session_id: str, nome: str = None, matricula: str = None) -> tuple[bool, str]:
+    """
+    Garante que a sessao esta autenticada antes de liberar as ferramentas
+    de credito/cobranca. Retorna (autenticado, mensagem).
+    """
+    if session_id in sessao_funcionario:
+        return True, ""
+
+    if nome and matricula:
+        if validar_funcionario(nome, matricula):
+            sessao_funcionario[session_id] = {"nome": nome, "matricula": matricula}
+            return True, ""
+        return False, "Nome ou matrícula não conferem com o cadastro. Por favor, confirme os dados."
+
+    return False, (
+        "Para responder isso preciso confirmar seu cadastro. "
+        "Por favor, informe seu nome completo e matrícula de funcionário."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Conteudo institucional (nao exige autenticacao)
+# ---------------------------------------------------------------------------
+CONTEUDO_INSTITUCIONAL = """\
+SOBRE A PETROMAX QUÍMICA
+ 
+Origem:
+Em 2011, no coração do polo petroquímico de Camaçari (BA) — um dos \
+maiores complexos industriais do Hemisfério Sul —, o engenheiro químico \
+Everton Ferreira Guedes identificou uma lacuna que o mercado insistia em \
+ignorar: pequenas e médias indústrias da região tinham acesso limitado a \
+insumos petroquímicos de qualidade, com prazos de entrega pouco confiáveis \
+e suporte técnico quase inexistente. Foi a partir dessa constatação, e não \
+de um plano de negócios ambicioso, que nasceu a PetroMax Química: um \
+galpão alugado, duas máquinas de mistura adquiridas de segunda mão e uma \
+equipe de três pessoas dispostas a provar que rigor técnico e proximidade \
+com o cliente não precisavam ser privilégio das grandes corporações.
+ 
+O teste decisivo:
+Os primeiros dois anos exigiram mais disciplina do que capital. Sem \
+margem para erros, a equipe se dedicou a dominar cada etapa do processo \
+produtivo antes de buscar crescimento. Essa base sólida se provou \
+essencial em 2013, quando a PetroMax fechou seu primeiro contrato de \
+fornecimento contínuo com uma fabricante de tintas industriais de grande \
+porte — um cliente que não abria mão de consistência química e \
+pontualidade absoluta. A entrega bem-sucedida desse contrato não apenas \
+validou o modelo de negócio: tornou-se a referência que impulsionou a \
+reputação da empresa em todo o setor.
+ 
+Consolidação e expansão:
+Na década seguinte, a PetroMax Química ampliou sua capacidade produtiva, \
+diversificou seu portfólio e investiu continuamente em controle de \
+qualidade e capacitação técnica de sua equipe. Cresceu sem abrir mão do \
+princípio fundador: cada cliente deve sentir que está lidando com uma \
+empresa que conhece profundamente sua química — e seu negócio.
+ 
+O presente: tecnologia a serviço da operação:
+Hoje, a PetroMax Química une a experiência acumulada de mais de uma \
+década de chão de fábrica a uma gestão orientada por dados e tecnologia. \
+Este assistente virtual é um exemplo direto dessa filosofia: fruto do \
+projeto interno de inovação **One AI Tech Builder**, idealizado para \
+aproximar inteligência artificial da rotina operacional, comercial e de \
+relacionamento com o cliente — tornando processos mais ágeis sem abrir \
+mão da precisão que sempre foi a marca registrada da empresa.
+ 
+Fundador e Diretor Geral: Everton Ferreira Guedes.
+ 
+Portfólio de produtos:
+- Resinas e polímeros industriais
+- Solventes e diluentes técnicos
+- Aditivos para tintas e vernizes
+- Insumos petroquímicos sob medida (formulação customizada por cliente)
+- Lubrificantes industriais especiais
+ 
+Nossa equipe:
+- Corpo fabril: aproximadamente 140 colaboradores, organizados em três \
+turnos de produção contínua
+- Corpo administrativo e comercial: aproximadamente 35 colaboradores
+ 
+Horário de funcionamento:
+- Produção (fábrica): operação contínua em 3 turnos, 24 horas por dia, \
+de segunda a sábado
+- Administrativo e Comercial: segunda a sexta-feira, das 8h às 18h \
+(horário de Brasília)
+ 
+Do galpão alugado em Camaçari à operação de hoje, a PetroMax Química \
+segue orientada pelo mesmo compromisso que a fundou: ciência aplicada, \
+agilidade e proximidade genuína com quem confia em nossos produtos — \
+agora potencializados por inteligência artificial.
+"""
+
+
+@tool
+def informacoes_institucionais(pergunta: str) -> str:
+    """Responde perguntas sobre a empresa: história, fundador, produtos,
+    número de funcionários e horários de funcionamento. Não requer cadastro."""
+    return CONTEUDO_INSTITUCIONAL
+
+
+# ---------------------------------------------------------------------------
+# Ferramentas de credito / cobranca (ja existentes)
+# ---------------------------------------------------------------------------
 @tool
 def verificar_credito(cpf: str) -> dict:
     """
-    Verifica o limite de crédito, valor utilizado e disponível de um 
+    Verifica o limite de crédito, valor utilizado e disponível de um
     cliente pelo CPF.
     """
     return biz.verificar_credito(cpf)
+
+
 @tool
 def identificar_cliente_por_cpf(cpf: str) -> dict:
-    """Identifica um cliente da PetroMax Quimica a partir do CPF informamado,
+    """Identifica um cliente da PetroMax Quimica a partir do CPF informado,
     retornando nome, empresa, contato e status de crédito.
     """
     return biz.identificar_cliente_por_cpf(cpf)
+
 
 @tool
 def analisar_vencimento_boletos(cpf: str) -> dict:
@@ -37,12 +163,14 @@ def analisar_vencimento_boletos(cpf: str) -> dict:
     """
     return biz.analisar_vencimento_boletos(cpf)
 
+
 @tool
 def verificar_notas_vencidas(cpf: str) -> dict:
-    """Retorna somente as notas/boletos vencidos e não pagos de um cliente, 
+    """Retorna somente as notas/boletos vencidos e não pagos de um cliente,
     incluindo o valor total em atraso. Útil para ações de cobrança.
     """
     return biz.verificar_notas_vencidas(cpf)
+
 
 @tool
 def verificar_desconto_pagamento_antecipado(id_boleto: str) -> dict:
@@ -148,7 +276,8 @@ def gerar_relatorio_inadimplencia_geral() -> dict:
     clientes, com faixas de atraso (aging: 0-30, 31-60, 61-90, 90+ dias)."""
     return biz.gerar_relatorio_inadimplencia_geral()
 
-TOOLS = [
+
+TOOLS_COMERCIAIS = [
     identificar_cliente_por_cpf,
     verificar_credito,
     analisar_vencimento_boletos,
@@ -170,22 +299,22 @@ TOOLS = [
     gerar_relatorio_inadimplencia_geral,
 ]
 
-SYSTEM_PROMPT = """\
-Você é o Agente PetroMax, assistente virtual de crédito e cobrança da \
-PetroMax Química, uma empresa do setor petroquímico.
+# Todas as ferramentas do agente: comerciais + institucional
+TOOLS = TOOLS_COMERCIAIS + [informacoes_institucionais]
 
-Seu papel é ajudar colaboradores(as) do time financeiro e de atendimento a:
-- identificar clientes pelo CPF;
-- consultar e analisar crédito disponível;
-- verificar boletos pendentes, vencidos e próximos do vencimento;
-- calcular descontos por pagamento antecipado e juros/multa de atraso;
-- emitir 2ª via de boletos e enviá-la por e-mail;
-- alterar forma de pagamento e data de vencimento;
-- enviar comprovantes de pagamento e alertas de vencimento por e-mail;
-- consultar histórico e score de pagamento, e restrição em SPC/Serasa;
-- bloquear/liberar novos pedidos e negociar parcelamento de dívidas;
-- abrir chamados de contestação de cobrança;
-- gerar relatórios de cobrança e de inadimplência da carteira.
+SYSTEM_PROMPT = """\
+Você é o Agente PetroMax, assistente virtual institucional e de crédito e \
+cobrança da PetroMax Química, uma empresa do setor petroquímico.
+
+Seu papel é:
+- Responder perguntas institucionais (história, fundador, produtos, número \
+de funcionários, horários de funcionamento) para qualquer pessoa, sem \
+exigir cadastro.
+- Ajudar colaboradores(as) do time financeiro e de atendimento com \
+crédito e cobrança: identificar clientes pelo CPF, consultar crédito, \
+boletos, descontos, juros/multa, 2ª via, comprovantes, histórico e score \
+de pagamento, restrição SPC/Serasa, bloqueio/liberação de pedidos, \
+parcelamento de dívidas, contestações e relatórios de inadimplência.
 
 Regras:
 1. Sempre que a pergunta envolver um cliente específico, peça o CPF caso \
@@ -196,9 +325,9 @@ valores, datas ou status.
 4. Ao apresentar valores monetários, use o formato R$ 0.000,00.
 """
 
+
 def build_agent() -> AgentExecutor:
-    """Constrói e retorna o AgentExecutor pronto para uso. """
-    # api_key = os.getenv("GROQ_API_KEY")
+    """Constrói e retorna o AgentExecutor pronto para uso."""
     provider = os.getenv("LLM_PROVIDER", "groq").lower()
 
     if provider == "openrouter":
@@ -228,11 +357,40 @@ def build_agent() -> AgentExecutor:
     agent = create_tool_calling_agent(llm, TOOLS, prompt)
     return AgentExecutor(agent=agent, tools=TOOLS, verbose=False)
 
-@tool
-def gerar_relatorio_inadimplencia_geral(motivo_consulta: str = "geral") -> dict:
-    """Gera um relatório gerencial de inadimplência de toda a carteira de
-    clientes, com faixas de atraso (aging: 0-30, 31-60, 61-90, 90+ dias).
-    O parâmetro motivo_consulta pode ser preenchido com qualquer texto ou
-    deixado no padrão."""
-    return biz.gerar_relatorio_inadimplencia_geral()
 
+# ---------------------------------------------------------------------------
+# Ponto de entrada para o chat: aplica o gate de autenticacao ANTES de
+# chamar o agente, para as perguntas comerciais/credito.
+# ---------------------------------------------------------------------------
+_agent_executor = None
+
+
+def responder(pergunta: str, session_id: str, nome: str = None, matricula: str = None) -> str:
+    """
+    Ponto único de entrada usado pelo chat.
+    - Perguntas institucionais: sempre liberadas.
+    - Perguntas comerciais/crédito: exigem autenticação de funcionário
+      (nome + matrícula) na primeira vez de cada sessão.
+    """
+    global _agent_executor
+    if _agent_executor is None:
+        _agent_executor = build_agent()
+
+    # Heurística simples: se a sessão ainda não está autenticada E a
+    # pergunta não é claramente institucional, pede o cadastro antes de
+    # acionar o agente (evita que ferramentas de crédito sejam chamadas
+    # sem autenticação).
+    palavras_institucionais = [
+        "história", "fundador", "fundação", "quando foi fundad",
+        "produtos", "quantos funcionários", "horário de funcionamento",
+        "sobre a empresa", "sobre a petromax",
+    ]
+    e_institucional = any(p in pergunta.lower() for p in palavras_institucionais)
+
+    if not e_institucional:
+        autenticado, mensagem = autenticar_sessao(session_id, nome, matricula)
+        if not autenticado:
+            return mensagem
+
+    resultado = _agent_executor.invoke({"input": pergunta})
+    return resultado["output"]

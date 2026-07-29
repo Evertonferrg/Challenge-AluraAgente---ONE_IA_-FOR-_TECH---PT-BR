@@ -1,6 +1,6 @@
 cpf,nome,empresa,telefone,email,limite_credito,credito_utilizado,status_credito,desconto_pagamento_antecipado_pct,pedidos_bloqueados,restricao_spc_serasa
 433.218.196-43,Carlos Eduardo Ferreira,Posto Rota Sul Ltda,(11) 96122-2535,ferreiraguedeseverton@gmail.com,30000,5838.94,Aprovado,5,Sim,Não
-083.863.794-99,Mariana Souza Lima,Distribuidora Alfa Combustíveis,(11) 99108-3615,mariana.lima@distribuidora.com.br,8000,4236.42,Aprovado,10,Não,Não
+083.863.794-99,Mariana Souza Lima,Distribuidora Alfa Combustíveis,(11) 99108-3615,berenice.mraz@ethereal.email,8000,4236.42,Aprovado,10,Não,Não
 351.161.559-35,João Batista Nogueira,Química Bela Vista ME,(11) 99305-1711,joão.nogueira@química.com.br,10000,3361.91,Aprovado,10,Não,Não
 618.495.931-08,Fernanda Ribeiro Castro,Transportes Nogueira & Cia,(11) 98708-4733,fernanda.castro@transportes.com.br,20000,4122.04,Aprovado,8,Não,Não
 164.752.553-51,Roberto Almeida Pinto,Indústria Vale Verde S.A.,(11) 98874-2169,roberto.pinto@indústria.com.br,5000,4135.1,Aprovado,5,Não,Não
