@@ -270,9 +270,11 @@ def abrir_chamado_contestacao(cpf: str, id_boleto: str, motivo: str) -> dict:
 
 
 @tool
-def gerar_relatorio_inadimplencia_geral() -> dict:
+def gerar_relatorio_inadimplencia_geral(motivo_consulta: str = "geral") -> dict:
     """Gera um relatório gerencial de inadimplência de toda a carteira de
-    clientes, com faixas de atraso (aging: 0-30, 31-60, 61-90, 90+ dias)."""
+    clientes, com faixas de atraso (aging: 0-30, 31-60, 61-90, 90+ dias).
+    O parâmetro motivo_consulta pode ser preenchido com qualquer texto ou
+    deixado no padrão."""
     return biz.gerar_relatorio_inadimplencia_geral()
 
 
