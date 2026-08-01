@@ -13,8 +13,8 @@ import pandas as pd
 from . import tools as biz
 
 
-
-MODEL_NAME = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openai/gpt-oss-20b:free")
 
 # ---------------------------------------------------------------------------
 # Cadastro de funcionarios (autenticacao por sessao)
@@ -32,8 +32,6 @@ def validar_funcionario(nome: str, matricula: str) -> bool:
         & (df_funcionarios["matricula"].str.strip() == matricula.strip())
     ]
     return not resultado.empty
-
-
 
 
 def autenticar_sessao(session_id: str, nome: str = None, matricula: str = None) -> tuple[bool, str]:
@@ -61,7 +59,7 @@ def autenticar_sessao(session_id: str, nome: str = None, matricula: str = None) 
 # ---------------------------------------------------------------------------
 CONTEUDO_INSTITUCIONAL = """\
 SOBRE A PETROMAX QUÍMICA
- 
+
 Origem:
 Em 2011, no coração do polo petroquímico de Camaçari (BA) — um dos \
 maiores complexos industriais do Hemisfério Sul —, o engenheiro químico \
@@ -73,7 +71,7 @@ de um plano de negócios ambicioso, que nasceu a PetroMax Química: um \
 galpão alugado, duas máquinas de mistura adquiridas de segunda mão e uma \
 equipe de três pessoas dispostas a provar que rigor técnico e proximidade \
 com o cliente não precisavam ser privilégio das grandes corporações.
- 
+
 O teste decisivo:
 Os primeiros dois anos exigiram mais disciplina do que capital. Sem \
 margem para erros, a equipe se dedicou a dominar cada etapa do processo \
@@ -84,14 +82,14 @@ porte — um cliente que não abria mão de consistência química e \
 pontualidade absoluta. A entrega bem-sucedida desse contrato não apenas \
 validou o modelo de negócio: tornou-se a referência que impulsionou a \
 reputação da empresa em todo o setor.
- 
+
 Consolidação e expansão:
 Na década seguinte, a PetroMax Química ampliou sua capacidade produtiva, \
 diversificou seu portfólio e investiu continuamente em controle de \
 qualidade e capacitação técnica de sua equipe. Cresceu sem abrir mão do \
 princípio fundador: cada cliente deve sentir que está lidando com uma \
 empresa que conhece profundamente sua química — e seu negócio.
- 
+
 O presente: tecnologia a serviço da operação:
 Hoje, a PetroMax Química une a experiência acumulada de mais de uma \
 década de chão de fábrica a uma gestão orientada por dados e tecnologia. \
@@ -100,27 +98,27 @@ projeto interno de inovação **One AI Tech Builder**, idealizado para \
 aproximar inteligência artificial da rotina operacional, comercial e de \
 relacionamento com o cliente — tornando processos mais ágeis sem abrir \
 mão da precisão que sempre foi a marca registrada da empresa.
- 
+
 Fundador e Diretor Geral: Everton Ferreira Guedes.
- 
+
 Portfólio de produtos:
 - Resinas e polímeros industriais
 - Solventes e diluentes técnicos
 - Aditivos para tintas e vernizes
 - Insumos petroquímicos sob medida (formulação customizada por cliente)
 - Lubrificantes industriais especiais
- 
+
 Nossa equipe:
 - Corpo fabril: aproximadamente 140 colaboradores, organizados em três \
 turnos de produção contínua
 - Corpo administrativo e comercial: aproximadamente 35 colaboradores
- 
+
 Horário de funcionamento:
 - Produção (fábrica): operação contínua em 3 turnos, 24 horas por dia, \
 de segunda a sábado
 - Administrativo e Comercial: segunda a sexta-feira, das 8h às 18h \
 (horário de Brasília)
- 
+
 Do galpão alugado em Camaçari à operação de hoje, a PetroMax Química \
 segue orientada pelo mesmo compromisso que a fundou: ciência aplicada, \
 agilidade e proximidade genuína com quem confia em nossos produtos — \
@@ -130,151 +128,122 @@ agora potencializados por inteligência artificial.
 
 @tool
 def informacoes_institucionais(pergunta: str) -> str:
-    """Responde perguntas sobre a empresa: história, fundador, produtos,
-    número de funcionários e horários de funcionamento. Não requer cadastro."""
+    """Responde perguntas institucionais: história, fundador, produtos,
+    funcionários e horários. Não requer cadastro."""
     return CONTEUDO_INSTITUCIONAL
 
 
 # ---------------------------------------------------------------------------
-# Ferramentas de credito / cobranca (ja existentes)
+# Ferramentas de credito / cobranca
 # ---------------------------------------------------------------------------
 @tool
 def verificar_credito(cpf: str) -> dict:
-    """
-    Verifica o limite de crédito, valor utilizado e disponível de um
-    cliente pelo CPF.
-    """
+    """Verifica limite, uso e disponibilidade de crédito do cliente."""
     return biz.verificar_credito(cpf)
 
 
 @tool
 def identificar_cliente_por_cpf(cpf: str) -> dict:
-    """Identifica um cliente da PetroMax Quimica a partir do CPF informado,
-    retornando nome, empresa, contato e status de crédito.
-    """
+    """Identifica um cliente pelo CPF: nome, contato e status de crédito."""
     return biz.identificar_cliente_por_cpf(cpf)
 
 
 @tool
 def analisar_vencimento_boletos(cpf: str) -> dict:
-    """Lista todos os boletos pendentes e vencidos de um cliente, com dias
-    para vencer ou dias em atraso.
-    """
+    """Lista boletos pendentes e vencidos do cliente."""
     return biz.analisar_vencimento_boletos(cpf)
 
 
 @tool
 def verificar_notas_vencidas(cpf: str) -> dict:
-    """Retorna somente as notas/boletos vencidos e não pagos de um cliente,
-    incluindo o valor total em atraso. Útil para ações de cobrança.
-    """
+    """Retorna boletos vencidos e valor total em atraso do cliente."""
     return biz.verificar_notas_vencidas(cpf)
 
 
 @tool
 def verificar_desconto_pagamento_antecipado(id_boleto: str) -> dict:
-    """Calcula o valor com desconto para pagamento antecipado de um boleto
-    específico, informando o percentual de desconto e a economia."""
+    """Calcula valor com desconto se o boleto for pago antes do vencimento."""
     return biz.verificar_desconto_pagamento_antecipado(id_boleto)
 
 
 @tool
-def emitir_segunda_via_boleto(id_boleto: str) -> dict:
-    """Emite a 2ª via de um boleto (para boletos pendentes ou vencidos),
-    retornando linha digitável e valor."""
-    return biz.emitir_segunda_via_boleto(id_boleto)
-
-
-@tool
-def enviar_segunda_via_por_email(id_boleto: str, email: str = None) -> dict:
-    """Emite a 2ª via de um boleto e ENVIA POR E-MAIL ao cliente (usa o
-    e-mail cadastrado do cliente, ou um e-mail alternativo se informado)."""
-    return biz.enviar_segunda_via_por_email(id_boleto, email)
+def emitir_segunda_via_boleto(id_boleto: str, enviar_por_email: bool = False, email: str = None) -> dict:
+    """Emite 2ª via do boleto. Se enviar_por_email=True, também envia por
+    e-mail ao cliente (usa o e-mail cadastrado, ou 'email' se informado)."""
+    return biz.emitir_segunda_via_boleto(id_boleto, enviar_por_email, email)
 
 
 @tool
 def alterar_forma_pagamento(id_boleto: str, nova_forma: str) -> dict:
-    """Altera a forma de pagamento de um boleto. Valores aceitos: 'Boleto',
-    'PIX', 'Cartão de Crédito', 'Transferência (TED)'."""
+    """Altera a forma de pagamento: 'Boleto', 'PIX', 'Cartão de Crédito' ou
+    'Transferência (TED)'."""
     return biz.alterar_forma_pagamento(id_boleto, nova_forma)
 
 
 @tool
 def alterar_data_vencimento(id_boleto: str, nova_data: str) -> dict:
-    """Altera a data de vencimento de um boleto. A nova_data deve estar no
-    formato AAAA-MM-DD."""
+    """Altera a data de vencimento de um boleto (formato AAAA-MM-DD)."""
     return biz.alterar_data_vencimento(id_boleto, nova_data)
 
 
 @tool
 def enviar_comprovante_pagamento(id_boleto: str, email: str = None) -> dict:
-    """Envia o comprovante de pagamento de um boleto já pago para o e-mail
-    do cliente ou para um e-mail informado."""
+    """Envia comprovante de pagamento de um boleto já pago por e-mail."""
     return biz.enviar_comprovante_pagamento(id_boleto, email)
 
 
 @tool
 def gerar_relatorio_cobranca(cpf: str) -> dict:
-    """Gera um relatório consolidado de cobrança de um cliente: crédito
-    disponível, boletos vencidos e boletos pendentes."""
+    """Resumo de cobrança do cliente: crédito, vencidos e pendentes."""
     return biz.gerar_relatorio_cobranca(cpf)
 
 
 @tool
 def calcular_juros_multa_atraso(id_boleto: str) -> dict:
-    """Calcula multa e juros de mora acumulados de um boleto vencido,
-    retornando o valor atualizado a ser pago hoje."""
+    """Calcula multa e juros de mora de um boleto vencido."""
     return biz.calcular_juros_multa_atraso(id_boleto)
 
 
 @tool
 def consultar_historico_pagamento(cpf: str) -> dict:
-    """Consulta o histórico de pagamentos de um cliente e calcula seu score
-    de pagador: 'Bom pagador', 'Atraso recorrente' ou 'Inadimplente contumaz'."""
+    """Score de pagador do cliente: 'Bom pagador', 'Atraso recorrente' ou
+    'Inadimplente contumaz'."""
     return biz.consultar_historico_pagamento(cpf)
 
 
 @tool
 def verificar_restricao_credito(cpf: str) -> dict:
-    """Verifica se o cliente possui restrição registrada em órgãos de
-    proteção ao crédito (SPC/Serasa)."""
+    """Verifica restrição SPC/Serasa do cliente."""
     return biz.verificar_restricao_credito(cpf)
 
 
 @tool
 def bloquear_desbloquear_pedidos(cpf: str, acao: str) -> dict:
-    """Bloqueia ou libera novos pedidos de um cliente por inadimplência.
-    acao deve ser 'bloquear' ou 'desbloquear'."""
+    """Bloqueia ou libera novos pedidos do cliente ('bloquear'/'desbloquear')."""
     return biz.bloquear_desbloquear_pedidos(cpf, acao)
 
 
 @tool
 def negociar_parcelamento_divida(cpf: str, numero_parcelas: int) -> dict:
-    """Renegocia/parcela toda a dívida vencida em aberto de um cliente em
-    um número de parcelas (1 a 12), gerando novos boletos mensais."""
+    """Parcela dívidas vencidas do cliente em novos boletos (1 a 12x)."""
     return biz.negociar_parcelamento_divida(cpf, numero_parcelas)
 
 
 @tool
 def enviar_alerta_vencimento_proximo(cpf: str, dias_antecedencia: int = 3) -> dict:
-    """Envia por e-mail um alerta preventivo de boletos que vencem nos
-    próximos N dias (régua de cobrança, padrão 3 dias)."""
+    """Envia alerta por e-mail de boletos vencendo nos próximos N dias."""
     return biz.enviar_alerta_vencimento_proximo(cpf, dias_antecedencia)
 
 
 @tool
 def abrir_chamado_contestacao(cpf: str, id_boleto: str, motivo: str) -> dict:
-    """Abre um chamado interno de contestação sobre uma cobrança que o
-    cliente considera indevida ou tem dúvidas, para análise do financeiro."""
+    """Abre chamado interno de contestação sobre uma cobrança."""
     return biz.abrir_chamado_contestacao(cpf, id_boleto, motivo)
 
 
 @tool
 def gerar_relatorio_inadimplencia_geral(motivo_consulta: str = "geral") -> dict:
-    """Gera um relatório gerencial de inadimplência de toda a carteira de
-    clientes, com faixas de atraso (aging: 0-30, 31-60, 61-90, 90+ dias).
-    O parâmetro motivo_consulta pode ser preenchido com qualquer texto ou
-    deixado no padrão."""
+    """Relatório geral de inadimplência da carteira, por faixa de atraso."""
     return biz.gerar_relatorio_inadimplencia_geral()
 
 
@@ -285,7 +254,6 @@ TOOLS_COMERCIAIS = [
     verificar_notas_vencidas,
     verificar_desconto_pagamento_antecipado,
     emitir_segunda_via_boleto,
-    enviar_segunda_via_por_email,
     alterar_forma_pagamento,
     alterar_data_vencimento,
     enviar_comprovante_pagamento,
@@ -300,53 +268,109 @@ TOOLS_COMERCIAIS = [
     gerar_relatorio_inadimplencia_geral,
 ]
 
-# Todas as ferramentas do agente: comerciais + institucional
 TOOLS = TOOLS_COMERCIAIS + [informacoes_institucionais]
 
 SYSTEM_PROMPT = """\
 Você é o Agente PetroMax, assistente virtual institucional e de crédito e \
-cobrança da PetroMax Química, uma empresa do setor petroquímico.
+cobrança da PetroMax Química, empresa do setor petroquímico.
 
-Seu papel é:
-- Responder perguntas institucionais (história, fundador, produtos, número \
-de funcionários, horários de funcionamento) para qualquer pessoa, sem \
-exigir cadastro.
-- Ajudar colaboradores(as) do time financeiro e de atendimento com \
-crédito e cobrança: identificar clientes pelo CPF, consultar crédito, \
-boletos, descontos, juros/multa, 2ª via, comprovantes, histórico e score \
-de pagamento, restrição SPC/Serasa, bloqueio/liberação de pedidos, \
-parcelamento de dívidas, contestações e relatórios de inadimplência.
+Seu papel:
+- Responder perguntas institucionais (história, fundador, produtos, \
+funcionários, horários) para qualquer pessoa, sem exigir cadastro.
+- Ajudar o time financeiro/atendimento com crédito e cobrança: CPF, \
+crédito, boletos, descontos, juros/multa, 2ª via, comprovantes, \
+histórico, score, restrição SPC/Serasa, bloqueio/liberação de pedidos, \
+parcelamento, contestações e relatórios de inadimplência.
 
 Regras:
-1. Sempre que a pergunta envolver um cliente específico, peça o CPF caso \
-não tenha sido informado.
-2. Use as ferramentas disponíveis para buscar dados reais — nunca invente \
-valores, datas ou status.
+1. Se a pergunta envolver um cliente específico, peça o CPF caso não \
+informado.
+2. Use as ferramentas para buscar dados reais — nunca invente valores, \
+datas ou status.
 3. Responda sempre em português, de forma clara e profissional.
-4. Ao apresentar valores monetários, use o formato R$ 0.000,00.
+4. Valores monetários no formato R$ 0.000,00.
 """
 
 
-def build_agent() -> AgentExecutor:
-    """Constrói e retorna o AgentExecutor pronto para uso."""
-    provider = os.getenv("LLM_PROVIDER", "groq").lower()
+def _montar_llm_com_fallback():
+    """
+    Monta a cadeia de LLMs com fallback automático:
+    OpenRouter (principal) -> Groq (chave 1, 2, 3, 4).
+    Se uma chamada falhar (rate limit, erro de API, etc.), o LangChain
+    tenta automaticamente o próximo da lista.
+    Só inclui na cadeia os provedores que tiverem chave configurada no .env.
+    """
+    candidatos = []
 
-    if provider == "openrouter":
+    openrouter_key = os.getenv("OPENROUTER_API_KEY")
+    if openrouter_key:
         from langchain_openai import ChatOpenAI
-        api_key = os.getenv("OPENROUTER_API_KEY")
-        if not api_key:
-            raise RuntimeError("OPENROUTER_API_KEY não encontrada no .env.")
-        llm = ChatOpenAI(
-            model=os.getenv("OPENROUTER_MODEL", "openai/gpt-oss-20b:free"),
+        candidatos.append(ChatOpenAI(
+            model=OPENROUTER_MODEL,
             temperature=0,
-            api_key=api_key,
+            api_key=openrouter_key,
             base_url="https://openrouter.ai/api/v1",
+        ))
+
+    for i in range(1, 6):
+        groq_key = os.getenv(f"GROQ_API_KEY_{i}")
+        if groq_key:
+            candidatos.append(ChatGroq(model=GROQ_MODEL, temperature=0, api_key=groq_key))
+
+    # Compatibilidade retroativa: se ninguém configurou GROQ_API_KEY_1..5,
+    # tenta a variável antiga GROQ_API_KEY.
+    if not any(isinstance(c, ChatGroq) for c in candidatos):
+        groq_key_legado = os.getenv("GROQ_API_KEY")
+        if groq_key_legado:
+            candidatos.append(ChatGroq(model=GROQ_MODEL, temperature=0, api_key=groq_key_legado))
+
+    # Gemini (Google AI Studio) — aceita GOOGLE_API_KEY e GOOGLE_API_KEY2
+    for var in ("GOOGLE_API_KEY", "GOOGLE_API_KEY2"):
+        google_key = os.getenv(var)
+        if google_key:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            candidatos.append(ChatGoogleGenerativeAI(
+                model=os.getenv("GOOGLE_MODEL", "gemini-2.0-flash"),
+                temperature=0,
+                google_api_key=google_key,
+            ))
+
+    # Mistral
+    mistral_key = os.getenv("MISTRAL_API_KEY")
+    if mistral_key:
+        from langchain_mistralai import ChatMistralAI
+        candidatos.append(ChatMistralAI(
+            model=os.getenv("MISTRAL_MODEL", "mistral-large-latest"),
+            temperature=0,
+            api_key=mistral_key,
+        ))
+
+    # Cohere
+    cohere_key = os.getenv("COHERE_API_KEY")
+    if cohere_key:
+        from langchain_cohere import ChatCohere
+        candidatos.append(ChatCohere(
+            model=os.getenv("COHERE_MODEL", "command-r-plus"),
+            temperature=0,
+            cohere_api_key=cohere_key,
+        ))
+
+    if not candidatos:
+        raise RuntimeError(
+            "Nenhuma chave de API configurada. Defina pelo menos uma: "
+            "OPENROUTER_API_KEY, GROQ_API_KEY_1..5, GOOGLE_API_KEY(2), "
+            "MISTRAL_API_KEY ou COHERE_API_KEY no seu .env."
         )
-    else:
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise RuntimeError("GROQ_API_KEY não encontrada no .env.")
-        llm = ChatGroq(model=MODEL_NAME, temperature=0, api_key=api_key)
+
+    principal, *fallbacks = candidatos
+    if fallbacks:
+        return principal.with_fallbacks(fallbacks)
+    return principal
+
+
+def build_agent() -> AgentExecutor:
+    """Constrói e retorna o AgentExecutor pronto para uso, com fallback."""
+    llm = _montar_llm_com_fallback()
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", SYSTEM_PROMPT),
@@ -360,8 +384,7 @@ def build_agent() -> AgentExecutor:
 
 
 # ---------------------------------------------------------------------------
-# Ponto de entrada para o chat: aplica o gate de autenticacao ANTES de
-# chamar o agente, para as perguntas comerciais/credito.
+# Ponto de entrada para o chat
 # ---------------------------------------------------------------------------
 _agent_executor = None
 
@@ -377,10 +400,6 @@ def responder(pergunta: str, session_id: str, nome: str = None, matricula: str =
     if _agent_executor is None:
         _agent_executor = build_agent()
 
-    # Heurística simples: se a sessão ainda não está autenticada E a
-    # pergunta não é claramente institucional, pede o cadastro antes de
-    # acionar o agente (evita que ferramentas de crédito sejam chamadas
-    # sem autenticação).
     palavras_institucionais = [
         "história", "fundador", "fundação", "quando foi fundad",
         "produtos", "quantos funcionários", "horário de funcionamento",
